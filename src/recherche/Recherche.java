@@ -5,15 +5,15 @@ package recherche;
  * @author Alexis
  */
 public class Recherche {
+
     private static int nbEval;
 
-
     public static void main(String[] args) {
-        //Pour générer le fichier csv
-        
-        
-        int max = 100000;
 
+        //Pour la recherche Aléatoires
+        //Pour la boucle pour générer le fichier csv
+        int max = 100000;
+        nbEval = 100;
         //On boucle pour remplir le csv
         while (nbEval <= max) {
             SacADos s1 = new SacADos("ks_1000.dat");
@@ -32,11 +32,14 @@ public class Recherche {
             nbEval += 100; //Pas de 100 pour la boucle
         }
 
-        /*
-         SacADos s2 = new SacADos("ks_1000.dat");
-         s2.calculBeta();
-         System.out.println("Somme profit: " + s2.getSommeProfit());
-         */
+        //Pour la marche aléatoire
+        while (nbEval <= max) {
+            SacADos s2 = new SacADos("ks_1000.dat");
+            s2.calculBeta();
+            s2.marcheAleatoire(nbEval);
+            nbEval += 100; //Pas de 100 pour la boucle
+        }
+
     }
 
 }

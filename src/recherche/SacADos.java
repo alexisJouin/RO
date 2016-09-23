@@ -143,6 +143,16 @@ public class SacADos {
             System.out.println("Erreur : " + err);
         }
     }
+    
+    public void marcheAleatoire(int nbEval){
+        try {
+            FileWriter fw = new FileWriter("statRes.csv", true);
+            PrintWriter pWriter = new PrintWriter(fw);
+        }
+        catch (IOException err) {
+            System.out.println("Erreur : " + err);
+        }
+    }
 
     /**
      * GETTER
