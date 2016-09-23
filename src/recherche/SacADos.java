@@ -1,90 +1,98 @@
 package recherche;
 
 import java.io.*;
-import static java.rmi.server.LogStream.log;
 import java.util.Random;
-import java.util.Scanner;
 
 public class SacADos {
 
-    String[] tab = new String[4];
+    private final static String FILE_NAME = "test.csv";
+    public static int nbLigne = 4; // Nombre de lignes dans le fichier
+    String[] tab = new String[nbLigne];
     String[] tab2, tab3;
     String ligne, chaine = "";
     int i = 0;
     Integer nbItem;
-    Integer[] profit = new Integer[5];
-    Integer[] poids = new Integer[5];
+    int[] profit, poids;
     private Integer poidsTot;
-    boolean sol1[] = {false, false, true, true, false};
+    private Integer[] sol1;
+//    private Integer sol2[] = new Integer[10];
     private double sommeProfit = 0;
     private double sommePoids = 0;
     private double resultat;
     private double rapport;
-    //private poidTot = new Integer(tab[3]);
 
     private double beta;
+  
+    
+    public int nbEval = 100;
 
     public SacADos(String fichier) {
 
-        lectureFichier(fichier);
+        lectureFichier(fichier); // Lecture du fichier 
+        nbItem = new Integer(tab[0]).intValue();//nombre d'item
 
-        //Affichage du nombre d'item possible d'emporter
-        System.out.println("");
-        nbItem = new Integer(tab[0]);
-        System.out.println("nbItem: " + nbItem.intValue());
-
-        //Affichage des profits pour chaque items proposés
-        System.out.println("");
-        tab2 = tab[1].split(" ");
-        for (int comp = 0; comp < tab2.length; comp++) {
-            profit[comp] = Integer.parseInt(tab2[comp]);
-            if (sol1[comp] == true) {
-                sommeProfit += profit[comp];
-                System.out.println("profit: " + profit[comp]);
-            }
-        }
-
-        //Affichage des poids pour chaque items proposés
-        sommePoids = 0;
-        System.out.println("");
-        tab3 = tab[2].split(" ");
-        for (int comp = 0; comp < tab3.length; comp++) {
-            poids[comp] = Integer.parseInt(tab3[comp]);
-            if (sol1[comp] == true) {
-                sommePoids += poids[comp];
-                System.out.println("poids: " + poids[comp]);
-            }
-        }
-
+        //Recherche Aléatoire 
+        sol1 = new Integer[nbItem];
         Random randomGenerator = new Random();
-        for (int idx = 1; idx <= 10; ++idx) {
-            int randomInt = randomGenerator.nextInt(100);
-            System.out.println("Generated : " + randomInt);
+        for (int idx = 0; idx < nbItem; idx++) {
+            sol1[idx] = randomGenerator.nextInt(2);
+//            System.out.println("Generated : " + sol1[idx]);
+        }
+
+        //profits
+        tab2 = tab[1].split(" ");
+        profit = new int[nbItem];
+        //On boucle sur la 2ème ligne du fichier
+        for (int i = 0; i < tab2.length; i++) {
+            profit[i] = Integer.parseInt(tab2[i]);
+            if (sol1[i] == 1) {
+                sommeProfit += profit[i];
+                //System.out.println("profit: " + profit[i]);  
+            }
+        }
+
+        //Poid
+        sommePoids = 0;
+        tab3 = tab[2].split(" ");
+        poids = new int[nbItem];
+        //On boucle sur la 3ème ligne du fichier
+        for (int i = 0; i < tab3.length; i++) {
+            poids[i] = Integer.parseInt(tab3[i]);
+            if (sol1[i] == 1) {
+                sommePoids += poids[i];
+                //System.out.println("poids: " + poids[i]);
+            }
         }
 
     }
+    
+    
 
     // Calcul du max béta et du résultat
     public void calculBeta() {
         poidsTot = new Integer(tab[3]);
         if (this.sommePoids <= this.poidsTot) {
-            beta = this.sommeProfit;
+            this.resultat = this.sommeProfit;
         } else {
             this.beta = 0;
+            //On boucle sur la 3ème ligne du fichier
             for (int i = 0; i < this.tab3.length; i++) {
-                this.rapport = (double) this.profit[i] / (double) this.poids[i];
+                this.rapport = (double) this.profit[i] / (double) this.poids[i];//On calcule le rapport profi poid
+                //On applique la formule
                 if (this.rapport > this.beta) {
                     this.beta = this.rapport;
                 }
             }
         }
-        this.resultat
-                = this.sommeProfit - this.beta * (this.sommePoids - this.poidsTot);
+        this.resultat = this.sommeProfit - this.beta * (this.sommePoids - this.poidsTot);
+
     }
 
     //Lecture du fichier
     public void lectureFichier(String fichier) {
         try {
+
+            // Pour améliorer tout refaire avec des scanner et nextInt
             /*
              Scanner sc = new Scanner(fichier);
 
@@ -97,7 +105,6 @@ public class SacADos {
              sc.close();
             
              */
-
             InputStream ips = new FileInputStream(fichier);
             InputStreamReader ipsr = new InputStreamReader(ips);
             BufferedReader br = new BufferedReader(ipsr);
@@ -116,15 +123,32 @@ public class SacADos {
         }
     }
 
-    
-    public String toString(){
-        return "Somme profit : "+this.sommeProfit+"\nSomme Poid : "+this.sommePoids+"\nPoid Total : "+this.poidsTot+"\nBéta : "+this.beta+"\nRésultat : "+this.resultat ;
+    //Retourne tous les résultats
+    public String toString() {
+        return "Nombre d'item : " + nbItem + "\nSomme profit : " + this.sommeProfit + "\nSomme Poid : " + this.sommePoids + "\nPoid Total : " + this.poidsTot + "\nBéta : " + this.beta + "\nRésultat : " + this.resultat;
     }
+
+    // écrire profit dans un fichier en norme csv
+    public void toCSV(int nbEval) {
+
+        try {
+            FileWriter fw = new FileWriter("statRes.csv", true);
+            PrintWriter pWriter = new PrintWriter(fw);
+
+            pWriter.print(nbEval + ";" + this.sommeProfit + "\n");
+
+            System.out.println("Le fichier statRes.csv a bien été créé ou édité");
+            pWriter.close();
+        } catch (IOException err) {
+            System.out.println("Erreur : " + err);
+        }
+    }
+
     /**
      * GETTER
      */
     public double getSommeProfit() {
-        return sommeProfit;
+        return this.sommeProfit;
     }
 
     public double getSommePoid() {
